@@ -2,24 +2,18 @@
 
 require __DIR__.'/vendor/autoload.php';
 
-use DiDemo\Mailer\SmtpMailer;
+use Pimple\Container;
+use \DiDemo\FriendHarvester;
 
-$dsn = 'sqlite:'.__DIR__.'/data/database.sqlite';
-$pdo = new PDO($dsn);
+/* START BUILDING CONTAINER */
 
-$mailer = new SmtpMailer('smtp.SendMoneyToStrangers.com', 'smtpuser', 'smtppass', '465');
+$container = new Container();
 
-$sql = 'SELECT * FROM people_to_spam';
-foreach ($pdo->query($sql) as $row) {
-    $mailer->sendMessage(
-        $row['email'],
-        'Yay! We want to send you money for no reason!',
-        sprintf(<<<EOF
-Hi %s! We've decided that we want to send you money for no reason!
+require __DIR__.'/app/config.php';
+require __DIR__.'/app/services.php';
 
-Please forward us all your personal information so we can make a deposit and don't ask any questions!
-EOF
-        , $row['name']),
-        'YourTrustedFriend@SendMoneyToStrangers.com'
-    );
-}
+/* END BUILDING CONTAINER */
+
+/* @var FriendHarvester $friendHarvester */
+$friendHarvester = $container['friend_harvester'];
+$friendHarvester->emailFriends();
